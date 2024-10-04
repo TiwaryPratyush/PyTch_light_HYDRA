@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  train:
+    build:
+      context: .  # Use the current directory as the build context
+    container_name: train_container
+    command: bash -c "python train.py"  # Removed chmod command
+    shm_size: '8gb'  # Increase shared memory to prevent shared memory errors
+    mem_limit: '16g'
+    volumes:
+      - "./src:/app/src"  # Mount the src directory into /app/src inside the container
+      - "./data:/app/data"  # Mount the data directory
+      - "./checkpoints:/app/src/checkpoints"  # Mount the checkpoints directory
+      - "./logs:/app/src/logs"  # Mount the logs directory
+      - "./kaggle.json:/root/.kaggle/kaggle.json"  # Mount kaggle.json for Kaggle API credentials
+    working_dir: /app/src  # Set the working directory inside the container
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  eval:
+    build:
+      context: .
+    container_name: eval_container
+    command: bash -c "python eval.py --ckpt_path /app/src/checkpoints/mobilenetv2_checkpoint.ckpt"
+    shm_size: '8gb'
+    mem_limit: '16g'
+    volumes:
+      - "./src:/app/src"
+      - "./data:/app/data"
+      - "./checkpoints:/app/src/checkpoints"
+      - "./logs:/app/src/logs"
+      - "./kaggle.json:/root/.kaggle/kaggle.json"
+    working_dir: /app/src
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  infer:
+    build:
+      context: .
+    container_name: infer_container
+    command: bash -c "python infer.py --ckpt_path /app/src/checkpoints/mobilenetv2_checkpoint.ckpt --image_folder /app/new_images"  # Removed chmod command
+    shm_size: '8gb'
+    mem_limit: '16g'
+    volumes:
+      - "./src:/app/src"
+      - "./data:/app/data"
+      - "./new_images:/app/new_images"  # Mount the folder containing images for inference
+      - "./checkpoints:/app/src/checkpoints"
+      - "./logs:/app/src/logs"
+      - "./kaggle.json:/root/.kaggle/kaggle.json"
+    working_dir: /app/src
+    environment:
+      - PYTHONUNBUFFERED=1

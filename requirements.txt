@@ -1,0 +1,20 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# --------- pytorch --------- #
+torch==2.4.1+cpu
+torchvision==0.19.1+cpu
+lightning[extra]==2.4.0
+
+# --------- model zoo -------#
+timm==1.0.9
+# transformers
+
+# ------- tensor utils ------#
+# einops
+
+# --------- others --------- #
+tensorboard
+rich            # beautiful text formatting in terminal
+pytest          # tests
+black
+# sh            # for running bash commands in some tests (linux/macos only)
