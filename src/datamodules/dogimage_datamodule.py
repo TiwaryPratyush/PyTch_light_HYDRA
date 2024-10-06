@@ -8,12 +8,13 @@ import os
 import multiprocessing
 
 class DogImageDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str = "data/dataset", batch_size: int = 8, num_workers: int = None, train_val_split: float = 0.8):
+    def __init__(self, data_dir: str = "data/dataset", batch_size: int = 8, num_workers: int = None, 
+                 train_val_test_split: tuple = (0.7, 0.2, 0.1)):
         super().__init__()
         self.data_dir = Path(data_dir)
         self.batch_size = batch_size
         self.num_workers = num_workers if num_workers is not None else multiprocessing.cpu_count()  # Dynamically set num_workers
-        self.train_val_split = train_val_split  # Fraction of dataset to use for training
+        self.train_val_test_split = train_val_test_split  # Train, validation, test split percentages
         self.train_dataset = None
         self.val_dataset = None
         self.test_dataset = None
@@ -34,20 +35,22 @@ class DogImageDataModule(L.LightningDataModule):
         api.dataset_download_files(dataset, path=self.data_dir.parent, unzip=True)
 
     def setup(self, stage: str = None):
-        """Splits the dataset into training and validation sets."""
+        """Splits the dataset into training, validation, and test sets."""
         # Point to the dataset directory containing all breed subdirectories
         data_path = self.data_dir
 
-        # Define the full dataset (no predefined train/val split)
+        # Define the full dataset (no predefined train/val/test split)
         full_dataset = ImageFolder(root=data_path, transform=self.train_transform)
 
-        # Split the dataset into training and validation sets
-        train_size = int(self.train_val_split * len(full_dataset))
-        val_size = len(full_dataset) - train_size
-        self.train_dataset, self.val_dataset = random_split(full_dataset, [train_size, val_size])
+        # Split dataset based on train, validation, test split percentages
+        train_size = int(self.train_val_test_split[0] * len(full_dataset))
+        val_size = int(self.train_val_test_split[1] * len(full_dataset))
+        test_size = len(full_dataset) - train_size - val_size
 
-        # In this case, we'll use the validation set as the test set too
-        self.test_dataset = self.val_dataset
+        # Randomly split the dataset
+        self.train_dataset, self.val_dataset, self.test_dataset = random_split(
+            full_dataset, [train_size, val_size, test_size]
+        )
 
     def train_dataloader(self):
         """Returns the DataLoader for the training set."""

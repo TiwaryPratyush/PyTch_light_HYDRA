@@ -1,40 +1,47 @@
 import torch
 import torch.nn as nn
 import lightning as L
-from torchvision.models import resnet50, ResNet50_Weights
+from torchvision import models
 import torchmetrics
 
 class DogClassifier(L.LightningModule):
-    def __init__(self, num_classes=10, lr=1e-3, weight_decay=1e-5):
+    def __init__(self, base_model='resnet50', num_classes=10, pretrained=True, lr=1e-3, weight_decay=1e-5, 
+                 optimizer_type='Adam', scheduler_type='ReduceLROnPlateau', min_lr=1e-6, 
+                 scheduler_args=None):
         super().__init__()
+        
+        # Exposing hyperparameters to args
         self.save_hyperparameters()
 
-        # Load the pre-trained ResNet50 model using the correct weights
-        self.model = resnet50(weights=ResNet50_Weights.DEFAULT)
-
-        # **Modify convolutional layers to match the checkpoint**
-        # Replace all 1x1 convolutions in bottleneck layers with 3x3 convolutions
-        for name, module in self.model.named_modules():
-            if isinstance(module, nn.Conv2d) and module.kernel_size == (1, 1) and module.stride == (1, 1):
-                module.kernel_size = (3, 3)
-                module.padding = (1, 1)
-                # Adjust weight dimensions if necessary
-                module.weight = nn.Parameter(torch.randn(
-                    module.out_channels, module.in_channels, 3, 3))
-                # Remove bias if not present
-                if module.bias is not None:
-                    module.bias = nn.Parameter(torch.zeros(module.out_channels))
-
-        # Modify the final fully connected layer
-        num_ftrs = self.model.fc.in_features
-        self.model.fc = nn.Sequential(
-            nn.Dropout(p=0.5),
-            nn.Linear(num_ftrs, num_classes)
-        )
-
+        # Load the base model (can be ResNet, VGG, etc.) based on the base_model parameter
+        self.model = self._get_model(base_model, pretrained, num_classes)
+        
+        # Loss function and accuracy metric
         self.criterion = nn.CrossEntropyLoss()
-        self.accuracy = torchmetrics.Accuracy(
-            task="multiclass", num_classes=num_classes)
+        self.accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+
+    def _get_model(self, base_model, pretrained, num_classes):
+        """
+        Load the specified base model and modify the final fully connected layer for classification.
+        """
+        if base_model == 'resnet50':
+            model = models.resnet50(pretrained=pretrained)
+            num_ftrs = model.fc.in_features
+            model.fc = nn.Sequential(
+                nn.Dropout(p=0.5),
+                nn.Linear(num_ftrs, num_classes)
+            )
+        elif base_model == 'vgg16':
+            model = models.vgg16(pretrained=pretrained)
+            num_ftrs = model.classifier[-1].in_features
+            model.classifier[-1] = nn.Sequential(
+                nn.Dropout(p=0.5),
+                nn.Linear(num_ftrs, num_classes)
+            )
+        else:
+            raise ValueError(f"Base model {base_model} not supported.")
+        
+        return model
 
     def forward(self, x):
         return self.model(x)
@@ -67,19 +74,45 @@ class DogClassifier(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
-            self.parameters(),
-            lr=self.hparams.lr,
-            weight_decay=self.hparams.weight_decay
-        )
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            mode='min',
-            factor=0.5,
-            patience=2
-        )
-        return {
-            'optimizer': optimizer,
-            'lr_scheduler': scheduler,
-            'monitor': 'val/loss'
-        }
+        # Select the optimizer
+        if self.hparams.optimizer_type == 'Adam':
+            optimizer = torch.optim.Adam(
+                self.parameters(),
+                lr=self.hparams.lr,
+                weight_decay=self.hparams.weight_decay
+            )
+        elif self.hparams.optimizer_type == 'SGD':
+            optimizer = torch.optim.SGD(
+                self.parameters(),
+                lr=self.hparams.lr,
+                momentum=0.9,
+                weight_decay=self.hparams.weight_decay
+            )
+        else:
+            raise ValueError(f"Optimizer {self.hparams.optimizer_type} not supported.")
+
+        # Select the scheduler
+        if self.hparams.scheduler_type == 'ReduceLROnPlateau':
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                mode='min',
+                factor=self.hparams.scheduler_args.get('factor', 0.5),
+                patience=self.hparams.scheduler_args.get('patience', 2),
+                min_lr=self.hparams.min_lr  # Set the minimum learning rate
+            )
+            return {
+                'optimizer': optimizer,
+                'lr_scheduler': {
+                    'scheduler': scheduler,
+                    'monitor': 'val/loss'
+                }
+            }
+        elif self.hparams.scheduler_type == 'StepLR':
+            scheduler = torch.optim.lr_scheduler.StepLR(
+                optimizer,
+                step_size=self.hparams.scheduler_args.get('step_size', 10),
+                gamma=self.hparams.scheduler_args.get('gamma', 0.1)
+            )
+            return [optimizer], [scheduler]
+        else:
+            raise ValueError(f"Scheduler {self.hparams.scheduler_type} not supported.")

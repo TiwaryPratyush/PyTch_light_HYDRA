@@ -1,0 +1,6 @@
+# dog_image_datamodule.yaml
+_target_: src.datamodule.dogimage_datamodule.DogImageDataModule
+data_dir: "data/dataset"
+batch_size: 8
+num_workers: null
+train_val_test_split: [0.7, 0.2, 0.1]

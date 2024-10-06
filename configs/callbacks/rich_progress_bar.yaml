@@ -1,0 +1,4 @@
+# rich_progress_bar.yaml
+rich_progress_bar:
+  _target_: pytorch_lightning.callbacks.RichProgressBar
+  # No additional parameters are needed; this callback displays a rich progress bar by default.

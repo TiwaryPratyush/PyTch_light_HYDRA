@@ -1,0 +1,48 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=catdog_ex
+
+defaults:
+  - override /data: data/dataset
+  - override /model: dog_classifier
+  - override /callbacks: default
+  - override /logger: default
+  - override /trainer: default
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+seed: 42
+
+data:
+  batch_size: 64
+  num_workers: 0
+  #pin_memory: True
+
+model:
+  base_model: resnet50  # Model options: resnet50, vgg16
+  num_classes: 10
+  lr: 0.001
+
+trainer:
+  min_epochs: 1
+  max_epochs: 2
+  # gpus: 1
+
+callbacks:
+  model_checkpoint:
+    monitor: "val/acc"
+    mode: "max"
+    save_top_k: 1
+    save_last: True
+
+  early_stopping:
+    monitor: "val/acc"
+    patience: 10
+    mode: "max"
+
+# logger: 
+  # wandb:
+  #   tags: ["catdog", "${model.model_name}"]
+#     group: "catdog_classification"

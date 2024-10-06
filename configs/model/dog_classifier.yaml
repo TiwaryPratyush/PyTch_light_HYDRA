@@ -1,0 +1,17 @@
+# Configuration for the DogClassifier
+_target_: src.model.dog_classifier.DogClassifier
+
+base_model: resnet50  # Model options: resnet50, vgg16
+num_classes: 10       # Number of output classes
+pretrained: true      # Use pretrained weights
+lr: 0.001             # Learning rate
+weight_decay: 1e-5    # Weight decay for optimizer
+
+optimizer_type: Adam  # Optimizer options: Adam, SGD
+scheduler_type: ReduceLROnPlateau  # Scheduler options: ReduceLROnPlateau, StepLR
+min_lr: 1e-6          # Minimum learning rate for the scheduler
+
+scheduler_args:       # Scheduler-specific arguments
+  factor: 0.5
+  patience: 2
+
