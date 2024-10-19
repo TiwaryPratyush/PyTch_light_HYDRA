@@ -13,15 +13,15 @@ from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 # Set configurations
 class CFG:
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-    NUM_CLASSES = 10  # Ensure this matches your dataset's number of classes
-    EPOCHS = 2  # Number of epochs to train
-    BATCH_SIZE = 16  # Reduce batch size to reduce memory footprint
-    LR = 1e-4  # Learning rate
+    NUM_CLASSES = 2  # Changed to 2 for cat and dog classes
+    EPOCHS = 5  # Changed to 5 epochs
+    BATCH_SIZE = 32  # Increased batch size since we have fewer classes
+    LR = 3e-4  # Slightly increased learning rate
     NUM_WORKERS = 4
     SEED = 2024
     HEIGHT = 224
     WIDTH = 224
-    VAL_SPLIT = 0.2  # Use 20% of the data for validation
+    VAL_SPLIT = 0.2  # Kept the same 80/20 split
 
 # Set the seed for reproducibility
 random.seed(CFG.SEED)
@@ -48,7 +48,7 @@ val_loader = DataLoader(val_dataset, batch_size=CFG.BATCH_SIZE, num_workers=CFG.
 
 # Load MobileNetV2 model from torchvision
 model = models.mobilenet_v2(pretrained=True)
-# Modify the last layer to match the number of classes
+# Modify the last layer to match the new number of classes (2)
 model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, CFG.NUM_CLASSES)
 
 # Set up PyTorch Lightning module for MobileNetV2
@@ -96,14 +96,14 @@ trainer = L.Trainer(
     callbacks=[
         ModelCheckpoint(
             dirpath="checkpoints/",
-            filename="mobilenetv2_checkpoint",
+            filename="mobilenetv2_cat_dog_checkpoint",
             save_top_k=1,
             monitor="val/loss",
             mode="min"
         ),
         EarlyStopping(
             monitor="val/loss",
-            patience=3,
+            patience=2,  # Reduced patience due to fewer epochs
             mode="min"
         )
     ],

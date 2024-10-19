@@ -2,7 +2,7 @@
     autostage = true
     remote = gdrive
 ['remote "gdrive"']
-    url = gdrive://1Zsbc7nXpjq4WLqCr4KX3CnOl5WxEyw2d
+    url = gdrive://11BJWpOkNhpfXwzWlpYMUPG5hZM_CjvnX
     gdrive_acknowledge_abuse = true
-    gdrive_client_id = 20693220701-b4qeag4ghn9n07kk18787g90spj4kru0.apps.googleusercontent.com
-    gdrive_client_secret = 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
+    gdrive_client_id = 151346478208-7s9p5kgdob4ma9g0n3b3k0pta7slpt89.apps.googleusercontent.com
+    gdrive_client_secret = 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

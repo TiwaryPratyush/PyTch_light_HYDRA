@@ -3,11 +3,10 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from pathlib import Path
-from kaggle.api.kaggle_api_extended import KaggleApi
 import os
 import multiprocessing
 
-class DogImageDataModule(L.LightningDataModule):
+class CatDogDataModule(L.LightningDataModule):
     def __init__(self, data_dir: str = "data/dataset", batch_size: int = 8, num_workers: int = None, 
                  train_val_test_split: tuple = (0.7, 0.2, 0.1)):
         super().__init__()
@@ -20,19 +19,8 @@ class DogImageDataModule(L.LightningDataModule):
         self.test_dataset = None
 
     def prepare_data(self):
-        """Downloads and prepares the Dog Breed Image dataset."""
-        # Ensure the data directory exists
+        """Ensures the data directory exists."""
         os.makedirs(self.data_dir, exist_ok=True)
-
-        # Authenticate and download the dataset from Kaggle
-        api = KaggleApi()
-        api.authenticate()
-
-        # Dataset ID and download path
-        dataset = 'khushikhushikhushi/dog-breed-image-dataset'
-
-        # Download and unzip the dataset
-        api.dataset_download_files(dataset, path=self.data_dir.parent, unzip=True)
 
     def setup(self, stage: str = None):
         """Splits the dataset into training, validation, and test sets."""

@@ -4,8 +4,8 @@ import lightning as L
 from torchvision import models
 import torchmetrics
 
-class DogClassifier(L.LightningModule):
-    def __init__(self, base_model='resnet50', num_classes=10, pretrained=True, lr=1e-3, weight_decay=1e-5, 
+class CatDogClassifier(L.LightningModule):
+    def __init__(self, base_model='resnet50', num_classes=2, pretrained=True, lr=1e-3, weight_decay=1e-5, 
                  optimizer_type='Adam', scheduler_type='ReduceLROnPlateau', min_lr=1e-6, 
                  scheduler_args=None):
         super().__init__()
