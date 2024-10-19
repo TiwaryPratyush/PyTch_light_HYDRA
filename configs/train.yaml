@@ -7,7 +7,7 @@
 defaults:
   - _self_
   - data: data/dataset
-  - model: dog_classifier
+  - model: catdog_classifier
   - callbacks: default
   - logs: null # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
   - trainer: default
@@ -16,7 +16,7 @@ defaults:
 
   # experiment configs allow for version control of specific hyperparameters
   # e.g. best hyperparameters for given model and datamodule
-  - experiment: catdog_ex
+  - experiment: catdogimage_ex
 
 
   # debugging config (enable through command line, e.g. `python train.py debug=default)

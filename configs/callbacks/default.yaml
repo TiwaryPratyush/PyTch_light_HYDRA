@@ -15,8 +15,22 @@ model_checkpoint:
 
 early_stopping:
   monitor: "val/acc"
-  patience: 100
+  #patience: 100
+  patience: 5
   mode: "max"
 
 model_summary:
   max_depth: -1
+
+##### suggested by curser
+# rich_progress_bar:
+#   refresh_rate: 1
+
+# lr_monitor:
+#   logging_interval: "epoch"  
+
+rich_progress_bar:
+  refresh_rate: 1
+
+lr_monitor:
+  logging_interval: "epoch"

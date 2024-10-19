@@ -1,8 +1,8 @@
 # Configuration for the DogClassifier
-_target_: src.model.dog_classifier.DogClassifier
+_target_: src.model.catdog_classifier.CatDogClassifier
 
 base_model: resnet50  # Model options: resnet50, vgg16
-num_classes: 10       # Number of output classes
+num_classes: 2       # Number of output classes
 pretrained: true      # Use pretrained weights
 lr: 0.001             # Learning rate
 weight_decay: 1e-5    # Weight decay for optimizer

@@ -3,59 +3,26 @@ import lightning as L
 import argparse
 from pathlib import Path
 from torchvision import models
-from datamodules.catdog import CatDogDataModule  # Ensure correct import for your data module
+from datamodules.catdogimage_datamodule import CatDogDataModule  # Update this import
 from rich.console import Console
 import torch.nn as nn
 from torchmetrics import Accuracy
+from models.catdog_classifier import CatDogClassifier  # Add this import
 
 console = Console()
 
 # Configuration
 class CFG:
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-    NUM_CLASSES = 2  # Changed to 2 for cat and dog classes
-    BATCH_SIZE = 32  # Increased batch size to match train.py
+    NUM_CLASSES = 2
+    BATCH_SIZE = 32
     NUM_WORKERS = 4
-
-# Define the LightningModule for evaluation
-#class MobileNetV2LightningModule(L.LightningModule):
-class CatDogClassifier(L.LightningModule):
-    def __init__(self, model):
-        super().__init__()
-        self.model = model
-        self.criterion = torch.nn.CrossEntropyLoss()
-        self.accuracy = Accuracy(task="multiclass", num_classes=CFG.NUM_CLASSES)
-
-    def forward(self, x):
-        return self.model(x)
-
-    def validation_step(self, batch, batch_idx):
-        images, labels = batch
-        outputs = self(images)
-        loss = self.criterion(outputs, labels)
-        acc = self.accuracy(outputs.softmax(dim=-1), labels)
-        self.log('val/loss', loss, prog_bar=True)
-        self.log('val/acc', acc, prog_bar=True)
-        return loss
 
 def evaluate_model(ckpt_path, batch_size=CFG.BATCH_SIZE, num_classes=CFG.NUM_CLASSES, num_workers=CFG.NUM_WORKERS):
     console.print(f"[bold green]Loading model from checkpoint: {ckpt_path}[/bold green]")
 
-    # Load ResNet50 model and modify the classifier
-    model = models.resnet50(pretrained=False)
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Sequential(
-        nn.Dropout(p=0.5),
-        nn.Linear(num_ftrs, num_classes)
-    )
-
-    # Load checkpoint
-    checkpoint = torch.load(ckpt_path, map_location=CFG.DEVICE)
-    model.load_state_dict(checkpoint['state_dict'])
-
-    # Wrap the model in a LightningModule
-    #lightning_model = MobileNetV2LightningModule(model)
-    lightning_model = CatDogClassifier(model)
+    # Load the model using CatDogClassifier
+    lightning_model = CatDogClassifier.load_from_checkpoint(ckpt_path, num_classes=num_classes)
     lightning_model.to(CFG.DEVICE)
 
     # Set model to evaluation mode

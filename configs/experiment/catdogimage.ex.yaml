@@ -5,7 +5,7 @@
 
 defaults:
   - override /data: data/dataset
-  - override /model: dog_classifier
+  - override /model: catdog_classifier
   - override /callbacks: default
   - override /logger: default
   - override /trainer: default
@@ -22,12 +22,12 @@ data:
 
 model:
   base_model: resnet50  # Model options: resnet50, vgg16
-  num_classes: 10
+  num_classes: 2
   lr: 0.001
 
 trainer:
   min_epochs: 1
-  max_epochs: 2
+  max_epochs: 5
   # gpus: 1
 
 callbacks:

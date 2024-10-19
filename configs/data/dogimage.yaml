@@ -1,5 +1,5 @@
 # dog_image_datamodule.yaml
-_target_: src.datamodule.dogimage_datamodule.DogImageDataModule
+_target_: src.datamodule.catdogimage_datamodule.CatDogDataModule
 data_dir: "data/dataset"
 batch_size: 8
 num_workers: null
