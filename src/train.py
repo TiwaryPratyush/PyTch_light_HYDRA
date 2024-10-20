@@ -35,7 +35,7 @@ transform = transforms.Compose([
 ])
 
 # Define dataset paths and load datasets using ImageFolder
-data_dir = Path("data/dataset")
+data_dir = Path("src/data/dataset")  # Updated path
 dataset = ImageFolder(root=data_dir, transform=transform)
 
 # Split the dataset into training and validation sets

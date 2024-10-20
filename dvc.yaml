@@ -1,0 +1,12 @@
+stages:
+  train_model:
+    cmd: python src/train.py experiment=catdogimage_ex +trainner.log_every_n_steps=5
+    deps:
+    - configs/experiment/catdogimage_ex.yaml
+    - src/eval.py
+    - src/infer.py
+    - src/train.py
+    - src/data/dataset
+    outs:
+    - logfolder:
+        cache: false
