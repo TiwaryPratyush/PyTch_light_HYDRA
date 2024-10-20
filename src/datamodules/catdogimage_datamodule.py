@@ -7,7 +7,7 @@ import os
 import multiprocessing
 
 class CatDogDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str = "data/dataset", batch_size: int = 8, num_workers: int = None, 
+    def __init__(self, data_dir: str = "src/data/dataset", batch_size: int = 8, num_workers: int = None, 
                  train_val_test_split: tuple = (0.7, 0.2, 0.1)):
         super().__init__()
         self.data_dir = Path(data_dir)

@@ -43,8 +43,9 @@ val_size = int(CFG.VAL_SPLIT * len(dataset))
 train_size = len(dataset) - val_size
 train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
-train_loader = DataLoader(train_dataset, batch_size=CFG.BATCH_SIZE, shuffle=True, num_workers=CFG.NUM_WORKERS)
-val_loader = DataLoader(val_dataset, batch_size=CFG.BATCH_SIZE, num_workers=CFG.NUM_WORKERS)
+# Modify the DataLoader configurations
+train_loader = DataLoader(train_dataset, batch_size=CFG.BATCH_SIZE, shuffle=True, num_workers=0)
+val_loader = DataLoader(val_dataset, batch_size=CFG.BATCH_SIZE, num_workers=0)
 
 # Load MobileNetV2 model from torchvision
 model = models.mobilenet_v2(pretrained=True)
@@ -87,12 +88,12 @@ class MobileNetV2Classifier(L.LightningModule):
 # Initialize the LightningModule with MobileNetV2
 lightning_model = MobileNetV2Classifier(model)
 
-# Trainer configuration using PyTorch Lightning
+# Modify the Trainer configuration
 trainer = L.Trainer(
     max_epochs=CFG.EPOCHS,
     accelerator="auto",
     precision=32,
-    log_every_n_steps=1,
+    log_every_n_steps=5,  # Changed to match the command line argument
     callbacks=[
         ModelCheckpoint(
             dirpath="checkpoints/",
@@ -103,10 +104,11 @@ trainer = L.Trainer(
         ),
         EarlyStopping(
             monitor="val/loss",
-            patience=2,  # Reduced patience due to fewer epochs
+            patience=2,
             mode="min"
         )
     ],
+    num_sanity_val_steps=0,  # Add this line to skip sanity validation check
 )
 
 # Start training the model with validation data
